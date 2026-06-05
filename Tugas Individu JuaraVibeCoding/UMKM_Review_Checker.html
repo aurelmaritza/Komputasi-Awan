@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UMKM Review-Checker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/dist/tabler-icons.min.css">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  font-family: 'Plus Jakarta Sans', sans-serif;
+  background: #0a0a0f;
+  color: #e8e6f0;
+  min-height: 100vh;
+}
+:root {
+  --bg: #0a0a0f;
+  --bg2: #12111a;
+  --bg3: #1a1928;
+  --accent: #7c5cfc;
+  --accent2: #a78bfa;
+  --green: #22c55e;
+  --amber: #f59e0b;
+  --red: #ef4444;
+  --teal: #14b8a6;
+  --border: rgba(255,255,255,0.08);
+  --border2: rgba(124,92,252,0.3);
+  --text: #e8e6f0;
+  --muted: #8b87a0;
+  --card: #13121e;
+}
+
+.app { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+.hero { text-align: center; padding: 3rem 0 2rem; }
+.logo {
+  display: inline-flex; align-items: center; gap: 10px;
+  background: linear-gradient(135deg, #7c5cfc22, #14b8a622);
+  border: 1px solid var(--border2);
+  border-radius: 100px; padding: 6px 16px; margin-bottom: 1.5rem;
+  font-size: 13px; color: var(--accent2); font-weight: 600; letter-spacing: .05em;
+}
+h1 {
+  font-family: 'Syne', sans-serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 800;
+  background: linear-gradient(135deg, #e8e6f0 30%, #a78bfa);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  line-height: 1.1; margin-bottom: .75rem;
+}
+.tagline { color: var(--muted); font-size: 1rem; max-width: 480px; margin: 0 auto 2.5rem; }
+
+.input-area {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 20px; padding: 1.5rem; margin-bottom: 1.5rem;
+  transition: border-color .2s;
+}
+.input-area:focus-within { border-color: var(--border2); }
+.input-label {
+  font-size: 12px; font-weight: 600; color: var(--muted);
+  letter-spacing: .08em; text-transform: uppercase;
+  margin-bottom: .75rem; display: flex; align-items: center; gap: 6px;
+}
+textarea {
+  width: 100%; background: transparent; border: none;
+  color: var(--text); font-family: inherit; font-size: .95rem;
+  line-height: 1.7; resize: none; outline: none; min-height: 140px;
+}
+textarea::placeholder { color: #3d3a52; }
+
+.analyze-btn {
+  width: 100%; padding: 14px;
+  background: linear-gradient(135deg, #7c5cfc, #a78bfa);
+  border: none; border-radius: 12px;
+  color: #fff; font-family: inherit; font-size: 1rem; font-weight: 700;
+  cursor: pointer; transition: opacity .2s, transform .1s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.analyze-btn:hover { opacity: .9; transform: translateY(-1px); }
+.analyze-btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+
+.loading { text-align: center; padding: 3rem; color: var(--muted); }
+.pulse {
+  display: inline-block; width: 40px; height: 40px;
+  border: 3px solid var(--border); border-top-color: var(--accent);
+  border-radius: 50%; animation: spin .8s linear infinite; margin-bottom: 1rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.results { animation: fadeUp .4s ease; }
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.section-title {
+  font-size: 11px; font-weight: 700; letter-spacing: .12em;
+  color: var(--muted); text-transform: uppercase;
+  margin-bottom: 1rem; display: flex; align-items: center; gap: 8px;
+}
+.section-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+.vibe-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 12px; margin-bottom: 1.5rem;
+}
+.vibe-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.25rem;
+}
+.vibe-label {
+  font-size: 13px; color: var(--muted); margin-bottom: .5rem;
+  display: flex; align-items: center; gap: 6px;
+}
+.vibe-score {
+  font-family: 'Syne', sans-serif; font-size: 2.5rem;
+  font-weight: 800; line-height: 1;
+}
+.vibe-bar {
+  height: 4px; background: #1a1928; border-radius: 2px;
+  margin-top: .75rem; overflow: hidden;
+}
+.vibe-fill { height: 100%; border-radius: 2px; transition: width 1s ease; }
+
+.main-grid {
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 1rem; margin-bottom: 1rem;
+}
+@media (max-width: 600px) { .main-grid { grid-template-columns: 1fr; } }
+
+.info-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.25rem;
+}
+.info-card h3 {
+  font-size: 13px; font-weight: 600; color: var(--muted);
+  margin-bottom: .875rem; display: flex; align-items: center; gap: 6px;
+}
+
+.tag-list { display: flex; flex-wrap: wrap; gap: 8px; }
+.tag { padding: 5px 12px; border-radius: 8px; font-size: 13px; font-weight: 500; }
+.tag.pos { background: #22c55e18; color: #4ade80; border: 1px solid #22c55e22; }
+.tag.neg { background: #ef444418; color: #f87171; border: 1px solid #ef444422; }
+
+.reco-list { list-style: none; }
+.reco-list li {
+  padding: .625rem 0; border-bottom: 1px solid var(--border);
+  font-size: .9rem; color: var(--text);
+  display: flex; gap: 10px; line-height: 1.5;
+}
+.reco-list li:last-child { border-bottom: none; }
+.reco-num {
+  width: 22px; height: 22px; background: var(--accent);
+  border-radius: 6px; color: #fff; font-size: 11px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; margin-top: 1px;
+}
+
+.summary-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 1.25rem; margin-bottom: 1rem;
+}
+.sentiment-bar {
+  display: flex; height: 8px; border-radius: 4px;
+  overflow: hidden; margin: .875rem 0;
+}
+.s-pos { background: #22c55e; }
+.s-neu { background: #f59e0b; }
+.s-neg { background: #ef4444; }
+.sent-labels { display: flex; justify-content: space-between; font-size: 12px; }
+.sent-dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  display: inline-block; margin-right: 4px;
+}
+.overall-score {
+  font-family: 'Syne', sans-serif; font-size: 4rem; font-weight: 800;
+  text-align: center; padding: 1rem 0;
+  background: linear-gradient(135deg, #7c5cfc, #22c55e);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.score-label { text-align: center; font-size: 13px; color: var(--muted); margin-bottom: .5rem; }
+
+.reset-btn {
+  background: transparent; border: 1px solid var(--border);
+  border-radius: 10px; color: var(--muted); font-family: inherit;
+  font-size: .875rem; padding: 8px 16px; cursor: pointer;
+  transition: all .15s; display: flex; align-items: center; gap: 6px;
+  margin: 1.5rem auto 0;
+}
+.reset-btn:hover { border-color: var(--accent); color: var(--accent2); }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <div class="hero">
+    <div class="logo"><i class="ti ti-sparkles" aria-hidden="true"></i> UMKM Review-Checker</div>
+    <h1>Ubah Review Jadi Strategi Bisnis</h1>
+    <p class="tagline">Analisis sentimen pelanggan, temukan keluhan utama, dan dapatkan rekomendasi langsung untuk mengembangkan bisnis Anda.</p>
+  </div>
+
+  <div id="input-section">
+    <div class="input-area">
+      <div class="input-label">
+        <i class="ti ti-message-dots" aria-hidden="true"></i> Review / Komentar Pelanggan
+      </div>
+      <textarea id="review-input" placeholder="Tempel review, komentar, atau chat pelanggan di sini..."></textarea>
+    </div>
+    <button class="analyze-btn" id="analyze-btn" onclick="analyze()">
+      <i class= aria-hidden="true"></i> Analisis Review Sekarang
+    </button>
+  </div>
+
+  <div id="loading" style="display:none">
+    <div class="loading">
+      <div class="pulse"></div>
+      <p>Menganalisis data ulasan bisnis Anda...</p>
+      <p style="font-size:13px;margin-top:.5rem">AI sedang membaca sentimen mendalam &amp; pola keluhan</p>
+    </div>
+  </div>
+
+  <div id="results" style="display:none"></div>
+
+</div>
+
+<script type="importmap">
+  {
+    "imports": {
+      "@google/genai": "https://esm.run/@google/genai"
+    }
+  }
+</script>
+
+<script type="module">
+import { GoogleGenAI } from '@google/genai';
+
+window.reset = function() {
+  document.getElementById('results').style.display = 'none';
+  document.getElementById('results').innerHTML = '';
+  document.getElementById('input-section').style.display = 'block';
+}
+
+window.analyze = async function() {
+  const text = document.getElementById('review-input').value.trim();
+  
+  // =========================================================================
+  // 🔑 KUNCI TOKEN API KEY GEMINI KAMU SUDAH AKTIF DENGAN BENAR DI BAWAH INI
+  // =========================================================================
+  const apiKey = "AQ.Ab8RN6IlLgsMFCIEKVY4qd1WXc9-pRzTa5ZCrjyO4E1Wr-QQnA"; 
+  // =========================================================================
+
+  if (!text) { 
+    alert('Masukkan data review pelanggan terlebih dahulu!'); 
+    return; 
+  }
+
+  document.getElementById('input-section').style.display = 'none';
+  document.getElementById('loading').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
+
+  // Konstruksi prompt rekayasa output teks ke JSON dinamis
+  const prompt = `Kamu adalah analis bisnis UMKM Indonesia yang ahli dalam mengekstrak ulasan pelanggan secara mendalam dan akurat.
+  Analisis sekumpulan ulasan pelanggan berikut. Kamu wajib memberikan kalkulasi skor dan data rekomendasi yang dinamis, unik, dan 100% relevan dengan konteks ulasan yang diberikan.
+
+  REVIEW:
+  ${text}
+
+  Kembalikan output dalam format JSON murni yang ketat tanpa markdown \`\`\`json, tanpa teks pengantar, pembuka, atau penutup apapun.
+
+  STRUKTUR JSON:
+  {
+    "overall_score": <angka integer 1-10 berdasarkan ulasan>,
+    "overall_label": "<Luar Biasa|Sangat Baik|Baik|Cukup|Perlu Perbaikan>",
+    "sentiment": {
+      "positif": <angka persentase 0-100>,
+      "netral": <angka persentase 0-100>,
+      "negatif": <angka persentase 0-100>
+    },
+    "vibe_scores": [
+      {"label": "Keramahan", "icon": "heart", "score": <integer 1-10>, "color": "#7c5cfc"},
+      {"label": "Kecepatan", "icon": "bolt", "score": <integer 1-10>, "color": "#14b8a6"},
+      {"label": "Kualitas", "icon": "star", "score": <integer 1-10>, "color": "#f59e0b"},
+      {"label": "Kepercayaan", "icon": "shield-check", "score": <integer 1-10>, "color": "#22c55e"},
+      {"label": "Harga", "icon": "tag", "score": <integer 1-10>, "color": "#a78bfa"},
+      {"label": "Pengiriman", "icon": "truck", "score": <integer 1-10>, "color": "#ef4444"}
+    ],
+    "kelebihan": ["<frasa kelebihan unik 1>", "<frasa kelebihan unik 2>", "<frasa kelebihan unik 3>"],
+    "keluhan": ["<frasa keluhan unik 1>", "<frasa keluhan unik 2>", "<frasa keluhan unik 3>"],
+    "rekomendasi": [
+      "<rekomendasi taktis operasional nyata 1>",
+      "<rekomendasi taktis operasional nyata 2>",
+      "<rekomendasi taktis operasional nyata 3>"
+    ],
+    "ringkasan": "<2-3 kalimat analisis naratif yang tajam mengenai kondisi persepsi bisnis berdasarkan ulasan tersebut>"
+  }`;
+
+  try {
+    const ai = new GoogleGenAI({ apiKey: apiKey });
+
+    // Memanggil API Gemini 2.5 Flash
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash',
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json"
+      }
+    });
+
+    const parsedData = JSON.parse(response.text.trim());
+    renderResults(parsedData);
+
+  } catch (err) {
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('input-section').style.display = 'block';
+    alert('Gagal menganalisis ulasan: ' + err.message);
+  }
+}
+
+function renderResults(d) {
+  document.getElementById('loading').style.display = 'none';
+
+  const scoreColor = d.overall_score >= 8 ? '#22c55e'
+                   : d.overall_score >= 6 ? '#f59e0b'
+                   : '#ef4444';
+
+  const vibeCards = (d.vibe_scores || []).map(v => `
+    <div class="vibe-card">
+      <div class="vibe-label">
+        <i class="ti ti-${v.icon}" style="color:${v.color}" aria-hidden="true"></i> ${v.label}
+      </div>
+      <div class="vibe-score" style="color:${v.color}">
+        ${v.score}<span style="font-size:1.25rem;opacity:.5">/10</span>
+      </div>
+      <div class="vibe-bar">
+        <div class="vibe-fill" style="width:${v.score * 10}%;background:${v.color}"></div>
+      </div>
+    </div>
+  `).join('');
+
+  const posTags = (d.kelebihan || []).map(k =>
+    `<span class="tag pos"><i class="ti ti-check" aria-hidden="true"></i> ${k}</span>`
+  ).join('');
+
+  const negTags = (d.keluhan || []).map(k =>
+    `<span class="tag neg"><i class="ti ti-x" aria-hidden="true"></i> ${k}</span>`
+  ).join('');
+
+  const recoItems = (d.rekomendasi || []).map((r, i) => `
+    <li><div class="reco-num">${i + 1}</div><span>${r}</span></li>
+  `).join('');
+
+  const sent = d.sentiment || {};
+  const pos = Math.round(sent.positif || 0);
+  const neu = Math.round(sent.netral  || 0);
+  const neg = Math.round(sent.negatif || 0);
+
+  const html = `
+    <div class="results">
+      <div class="summary-card" style="border-color:${scoreColor}44">
+        <p class="score-label">Reviewer Score Keseluruhan</p>
+        <div class="overall-score">${d.overall_score}/10</div>
+        <p style="text-align:center;font-weight:600;color:${scoreColor};margin-bottom:1rem">${d.overall_label}</p>
+        <p style="font-size:.9rem;color:var(--muted);line-height:1.7;text-align:center">${d.ringkasan}</p>
+        <div class="sentiment-bar" style="margin-top:1.25rem">
+          <div class="s-pos" style="width:${pos}%"></div>
+          <div class="s-neu" style="width:${neu}%"></div>
+          <div class="s-neg" style="width:${neg}%"></div>
+        </div>
+        <div class="sent-labels">
+          <span><span class="sent-dot" style="background:#22c55e"></span> Positif ${pos}%</span>
+          <span><span class="sent-dot" style="background:#f59e0b"></span> Netral ${neu}%</span>
+          <span><span class="sent-dot" style="background:#ef4444"></span> Negatif ${neg}%</span>
+        </div>
+      </div>
+
+      <div class="section-title"><i class="ti ti-radar-2" aria-hidden="true"></i> Reviewer Score Detail</div>
+      <div class="vibe-grid">${vibeCards}</div>
+
+      <div class="main-grid">
+        <div class="info-card">
+          <h3><i class="ti ti-thumb-up" style="color:#22c55e" aria-hidden="true"></i> Kelebihan Bisnis</h3>
+          <div class="tag-list">${posTags}</div>
+        </div>
+        <div class="info-card">
+          <h3><i class="ti ti-alert-triangle" style="color:#ef4444" aria-hidden="true"></i> Keluhan Utama</h3>
+          <div class="tag-list">${negTags}</div>
+        </div>
+      </div>
+
+      <div class="info-card" style="margin-bottom:1rem">
+        <h3><i class="ti ti-bulb" style="color:#f59e0b" aria-hidden="true"></i> Rekomendasi Tindakan</h3>
+        <ul class="reco-list">${recoItems}</ul>
+      </div>
+
+      <button class="reset-btn" onclick="reset()">
+        <i class="ti ti-refresh" aria-hidden="true"></i> Analisis Review Lain
+      </button>
+    </div>
+  `;
+
+  const el = document.getElementById('results');
+  el.innerHTML = html;
+  el.style.display = 'block';
+
+  setTimeout(() => {
+    el.querySelectorAll('.vibe-fill').forEach(bar => {
+      const w = bar.style.width;
+      bar.style.width = '0';
+      setTimeout(() => { bar.style.width = w; }, 100);
+    });
+  }, 100);
+}
+</script>
+</body>
+</html>
